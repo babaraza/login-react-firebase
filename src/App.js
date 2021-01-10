@@ -1,24 +1,35 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from "react";
+import "./App.css";
+import firebase from "firebase";
+import { auth } from "./firebase";
+import Login from "./Login";
+import { userState, customMessageState } from "./atoms";
+import { useRecoilValue, useRecoilState } from "recoil";
 
 function App() {
+  const [user, setUser] = useRecoilState(userState);
+  const customMessage = useRecoilValue(customMessageState);
+
+  useEffect(() => {
+    auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+    auth.onAuthStateChanged((authUser) => {
+      if (authUser) {
+        setUser(authUser);
+      } else {
+        setUser(null);
+      }
+    });
+  }, [setUser]);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
+    <div className="app">
+      <Login />
+      <div className="debug">
+        <span>The user is: {user ? user.email : "no user signed in"}</span>
         <p>
-          Edit <code>src/App.js</code> and save to reload.
+          <strong>{customMessage ? customMessage : ""}</strong>
         </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      </div>
     </div>
   );
 }
